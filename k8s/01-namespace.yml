@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: keycloak-srpingboot-demo
+  labels:
+    name: keycloak-srpingboot-demo

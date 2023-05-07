@@ -1,0 +1,5 @@
+keycloak:
+  client-id: myclient
+  grant-type: password
+  realm-id: testrealm
+  url-base: http://localhost:8082
