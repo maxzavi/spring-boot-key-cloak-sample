@@ -160,7 +160,6 @@ Using port number in PORT_NUMBER, access
 
 http://localhost:{PORT_NUMBER}
 
-Configure realm, user, client like initial steps 
 
 In **k8s/03-springboot-test.yml** change spec.template.spec.containers.image with docker image url (public), and set variable value **keycloak__url-base** with CLUSTE-IP of keycloak-nodeport service, port 8080: **http://10.111.251.41:8080**
 
@@ -196,8 +195,20 @@ kubectl apply -f k8s/03-springboot-test.yml
 
 # Demo full
 
-1. Create namespace
+Create namespace **keycloak-srpingboot-demo**, if exists, remove:
 
+Check:
+
+```sh
+kubectl get ns
+```
+Exits? remove:
+
+```sh
+kubectl delete ns keycloak-srpingboot-demo
+```
+
+Create namespaces
 
 ```sh
  kubectl apply -f k8s/01-namespace.yml
@@ -221,24 +232,27 @@ Using port number in PORT_NUMBER, access
 
 http://localhost:{PORT_NUMBER}
 
+Use console, with admin/admin username/password , set realm, user, client like initial steps 
+
+## Test Realm
+
 - Create realm **testrealm**
 - In real created, add user: set password **no temporary**; admintest/admintest$
 - Create client **myclient**
 - In created client **myclient**, scope: “Client Scope”, in **myclient-dedicated** -> **Add predefined mapper** -> **realm roles**, check “Add to userinfo”
-
 - In **Realm roles** create roles **USER** and **ADMIN**
-
 - Asign rol **USER**, and **ADMIN** to **admintest**
+
+## Prod Realm
 
 - Create realm **prodrealm**
 - In real created, add user: set password **no temporary**; adminprod/4dm1npR0d$
 - Create client **myclient**
 - In created client **myclient**, scope: “Client Scope”, in **myclient-dedicated** -> **Add predefined mapper** -> **realm roles**, check “Add to userinfo”
-
 - In **Realm roles** create roles **USER** and **ADMIN**
-
 - Asign rol **USER**, and **ADMIN** to **adminprod**
 
+## Application product-acme
 
 In **k8s/03-springboot-test.yml** and **k8s/04-springboot-prod.yml** change spec.template.spec.containers.image with docker image url (public), and set variable value **keycloak__url-base** with CLUSTE-IP of keycloak-nodeport service, port 8080: **http://10.111.251.41:8080**
 
@@ -251,12 +265,12 @@ kubectl apply -f k8s/03-springboot-test.yml
 ```sh
 kubectl apply -f k8s/04-springboot-prod.yml
 ```
-get port by realm by environment:
 
-Check enpoints in swagger, using port
+Get port by realm by environment:
 
-http://localhost:31468/swagger-ui/index.html
+Check enpoints in swagger, using port **product acme** test service:
 
+http://localhost:{{port}}/swagger-ui/index.html
 
 
 Import curl from swagger and create request **login-test** in collection **main** y folder **security**

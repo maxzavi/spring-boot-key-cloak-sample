@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  springbootdemo-keycloak
+  name:  springbootdemo-test-keycloak
   labels:
-    app:  springbootdemo-keycloak
+    app:  springbootdemo-test-keycloak
 spec:
   selector:
     matchLabels:
-      app: springbootdemo-keycloak
+      app: springbootdemo-test-keycloak
   replicas: 1
   template:
     metadata:
       labels:
-        app:  springbootdemo-keycloak
+        app:  springbootdemo-test-keycloak
       annotations:
         repo: n/a
         swagger: n/a
     spec:
       containers:
-      - name: springbootdemo-keycloak
+      - name: springbootdemo-test-keycloak
         image:  mzavaletav/springboot-keycloak-demo:1.2
         env:
         - name: keycloak__url-base
-          value: http://10.96.224.7:8080
+          value: http://10.103.5.103:8080
         - name: keycloak__client-id
           value: myclient
         - name: keycloak__grant-type
@@ -36,11 +36,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: springbootdemo-keycloak-nodeport
+  name: springbootdemo-test-keycloak-nodeport
 spec:
   type: NodePort
   selector:
-    app: springbootdemo-keycloak
+    app: springbootdemo-test-keycloak
   ports:
     - port: 8080
       targetPort: 8080

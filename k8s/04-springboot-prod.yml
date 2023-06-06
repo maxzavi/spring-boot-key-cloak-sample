@@ -22,7 +22,7 @@ spec:
         image:  mzavaletav/springboot-keycloak-demo:1.2
         env:
         - name: keycloak__url-base
-          value: http://10.96.224.7:8080
+          value: http://10.103.5.103:8080
         - name: keycloak__client-id
           value: myclient
         - name: keycloak__grant-type
