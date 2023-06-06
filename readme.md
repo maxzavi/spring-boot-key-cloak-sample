@@ -124,6 +124,18 @@ docker push ${DOCKERHUB_ID}/springboot-keycloak-demo:${VERSION}
 
 ## Kubernetes
 
+Check exists namespace **keycloak-srpingboot-demo**:
+
+```sh
+kubectl get ns
+```
+
+if exists, remove namespace:
+
+```sh
+kubectl delete ns keycloak-srpingboot-demo
+```
+
 Create namespaces
 
 ```sh
@@ -182,3 +194,171 @@ kubectl apply -f k8s/03-springboot-test.yml
 
 
 
+# Demo full
+
+1. Create namespace
+
+
+```sh
+ kubectl apply -f k8s/01-namespace.yml
+```
+
+Set default namespace
+
+```sh
+kubectl config set-context --current --namespace=keycloak-srpingboot-demo
+```
+Create keycloak service:
+```sh
+kubectl apply -f k8s/02-keycloak.yml
+```
+Get port number type nodeport:
+
+```cmd
+kubectl get services
+```
+Using port number in PORT_NUMBER, access 
+
+http://localhost:{PORT_NUMBER}
+
+- Create realm **testrealm**
+- In real created, add user: set password **no temporary**; admintest/admintest$
+- Create client **myclient**
+- In created client **myclient**, scope: “Client Scope”, in **myclient-dedicated** -> **Add predefined mapper** -> **realm roles**, check “Add to userinfo”
+
+- In **Realm roles** create roles **USER** and **ADMIN**
+
+- Asign rol **USER**, and **ADMIN** to **admintest**
+
+- Create realm **prodrealm**
+- In real created, add user: set password **no temporary**; adminprod/4dm1npR0d$
+- Create client **myclient**
+- In created client **myclient**, scope: “Client Scope”, in **myclient-dedicated** -> **Add predefined mapper** -> **realm roles**, check “Add to userinfo”
+
+- In **Realm roles** create roles **USER** and **ADMIN**
+
+- Asign rol **USER**, and **ADMIN** to **adminprod**
+
+
+In **k8s/03-springboot-test.yml** and **k8s/04-springboot-prod.yml** change spec.template.spec.containers.image with docker image url (public), and set variable value **keycloak__url-base** with CLUSTE-IP of keycloak-nodeport service, port 8080: **http://10.111.251.41:8080**
+
+
+Deploy using kubectl command:
+
+```sh
+kubectl apply -f k8s/03-springboot-test.yml
+```
+```sh
+kubectl apply -f k8s/04-springboot-prod.yml
+```
+get port by realm by environment:
+
+Check enpoints in swagger, using port
+
+http://localhost:31468/swagger-ui/index.html
+
+
+
+Import curl from swagger and create request **login-test** in collection **main** y folder **security**
+
+Duplicate request, and save **login-prod**, change url, username and password -- production realm
+
+Create request **login**, create Environments and change values
+
+
+In Keycloak admin console change access token lifespan token section to 30 minutes, in **Realm Settings** -> **Tokens** ->
+**Access Token Lifespan** by test and prod realm.
+
+Send login request and review in postman
+
+Import get products en folder product and create request get product-test, change Authorization header
+
+Import post product en folder product and create request product-test, change Authorization header, execute and check 
+in get product-test
+
+Repeat in production
+
+Create environments test and prod and creat one request by login
+
+Create one rquest get product, define variable access_token
+
+Check prod and test, kill sessions in keycloak and test
+
+Add Test in postman
+
+```javascript
+var data = JSON.parse(responseBody)
+postman.setEnvironmentVariable("access_token",data.access_token)
+```
+
+In other methods add **Pre-request script**
+
+```javascript
+var  url =  pm.environment.get('url')
+var  username =  pm.environment.get('username')
+var  password =  pm.environment.get('password')
+
+const echoPostRequest = {
+  url: url+'/api/v1/login',
+  method: 'POST',
+  header: 'Content-Type:application/json',
+  body: {
+    mode: 'application/json',
+    raw: JSON.stringify(
+{
+  "username": username,
+  "password": password
+})
+  }
+};
+var getToken = true;
+
+pm.sendRequest(echoPostRequest, function (err, res) {
+    if (err === null) {
+        var responseJson = res.json();
+        pm.environment.set('access_token', responseJson.access_token)
+    }
+});
+```
+
+Other version
+
+```javascript
+var  url =  pm.environment.get('url')
+var  username =  pm.environment.get('username')
+var  password =  pm.environment.get('password')
+const echoPostRequest = {
+  url: url+'/api/v1/login',
+  method: 'POST',
+  header: 'Content-Type:application/json',
+  body: {
+    mode: 'application/json',
+    raw: JSON.stringify(
+{
+  "username": username,
+  "password": password
+})
+  }
+};
+var getToken = true;
+
+if (!pm.environment.get('accessTokenExpiry') ) {
+    console.log('Token or expiry date are missing')
+} else if (pm.environment.get('accessTokenExpiry') <= (new Date()).getTime()) {
+    console.log('Token is expired')
+} else {
+    getToken = false;
+    console.log('Token and expiry date are all good');
+}
+if (getToken === true) {
+    pm.sendRequest(echoPostRequest, function (err, res) {
+        if (err === null) {
+            var responseJson = res.json();
+            pm.environment.set('access_token', responseJson.access_token)
+    
+            var expiryDate = new Date();
+            expiryDate.setSeconds(expiryDate.getSeconds() + responseJson.expires_in);
+            pm.environment.set('accessTokenExpiry', expiryDate.getTime());
+        }
+    });
+}```
