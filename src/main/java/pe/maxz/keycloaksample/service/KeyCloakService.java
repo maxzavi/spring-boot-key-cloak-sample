@@ -39,13 +39,15 @@ public class KeyCloakService {
 
     public ResponseEntity<String> login (Login login){
         log.info("Using: url-base: {} realm-id: {}", urlBase, realmId);
-        log.info("Login: {}", login);
+        log.info("Login username: {}", login.getUsername());
+
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("username",login.getUsername());
         map.add("password",login.getPassword());
         map.add("client_id",clientId);
         map.add("grant_type", grantType);
         map.add("scope", "openid");
+        
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, new HttpHeaders());
         
         String uri= urlBase + "/realms/"+ realmId  +"/protocol/openid-connect/token";

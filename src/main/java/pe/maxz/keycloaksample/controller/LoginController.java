@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import pe.maxz.keycloaksample.entity.Login;
@@ -23,7 +25,12 @@ public class LoginController {
     KeyCloakService keyCloakService;
 
     @PostMapping (value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(@RequestBody Login login){
+        @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Access unauthorized")
+    })
+    public ResponseEntity<String> login(
+            @RequestBody Login login){
         log.info("Login: {}", login);
         ResponseEntity<String> responseEntity =  keyCloakService.login(login);
         return  ResponseEntity.status(responseEntity.getStatusCode()).body(responseEntity.getBody());

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import pe.maxz.keycloaksample.entity.Product;
 import pe.maxz.keycloaksample.service.KeyCloakService;
@@ -32,15 +34,16 @@ public class ProductController {
 
     @GetMapping("/")
     public ResponseEntity<List<Product>> getAll(
-            @RequestHeader(value = "Authorization", required = false) String authorization) {
-        var resulAuth = keyCloakService.valid("USER", authorization);
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        var resulAuth = keyCloakService.valid("USER", token);
         if (resulAuth != HttpStatus.OK)
             return new ResponseEntity<>(resulAuth);
         return ResponseEntity.ok(productService.getAll());
     }
 
     @PostMapping(value = "/")
-    public ResponseEntity<Product> create(@RequestHeader(value = "Authorization", required = false) String token,
+    public ResponseEntity<Product> create(
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestBody Product product) {
         var resultAuth = keyCloakService.valid("ADMIN", token);
         if (!resultAuth.equals(HttpStatus.OK))
@@ -49,7 +52,13 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> get(@RequestHeader(value = "Authorization", required = false) String token,
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Access unauthorized"),
+        @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<Product> get(
+            @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable int id) {
         var resultAuth = keyCloakService.valid("USER", token);
         if (!resultAuth.equals(HttpStatus.OK))
@@ -61,7 +70,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@RequestHeader(value = "Authorization", required = false) String token,
+    public ResponseEntity<?> delete(
+            @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable int id) {
         var resultAuth = keyCloakService.valid("ADMIN", token);
         if (!resultAuth.equals(HttpStatus.OK))
@@ -73,7 +83,8 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@RequestHeader(value = "Authorization", required = false) String token,
+    public ResponseEntity<Product> update(
+            @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable int id,
             @RequestBody Product product) {
         var resultAuth = keyCloakService.valid("ADMIN", token);
