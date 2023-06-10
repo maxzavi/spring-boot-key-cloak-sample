@@ -1,8 +1,6 @@
 package pe.maxz.keycloaksample.service;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -19,12 +17,13 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import pe.maxz.keycloaksample.entity.Login;
 import pe.maxz.keycloaksample.entity.UserInfo;
 
 @Service
+@Slf4j
 public class KeyCloakService {
-    private final Logger LOG = LoggerFactory.getLogger(KeyCloakService.class);
 
     @Value("${keycloak.client-id}")
     String clientId;
@@ -39,8 +38,8 @@ public class KeyCloakService {
     private RestTemplate restTemplate;
 
     public ResponseEntity<String> login (Login login){
-        LOG.info("Using: url-base: {} realm-id: {}", urlBase, realmId);
-        LOG.info("Login: {}", login);
+        log.info("Using: url-base: {} realm-id: {}", urlBase, realmId);
+        log.info("Login: {}", login);
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("username",login.getUsername());
         map.add("password",login.getPassword());
@@ -53,7 +52,7 @@ public class KeyCloakService {
         try {
             return restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
         } catch(HttpStatusCodeException e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(e.getStatusCode().value()).headers(e.getResponseHeaders())
                     .body(e.getResponseBodyAsString());
         }
@@ -74,7 +73,7 @@ public class KeyCloakService {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure (DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
             UserInfo userInfo = objectMapper.readValue(result, UserInfo.class);
-            LOG.info("UserInfo: {}", userInfo);
+            log.info("UserInfo: {}", userInfo);
             boolean valid= userInfo.getRealm_access().getRoles().contains(role);
             if (!valid) return HttpStatus.FORBIDDEN;
             return HttpStatus.OK;

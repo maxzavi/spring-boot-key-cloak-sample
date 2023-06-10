@@ -3,15 +3,14 @@ package pe.maxz.keycloaksample.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import pe.maxz.keycloaksample.entity.Product;
 
 @Service
+@Slf4j
 public class ProductService {
-    private final Logger LOG = LoggerFactory.getLogger(ProductService.class);
 
     private List<Product> products;
     private int sequencialId=0;
@@ -42,7 +41,7 @@ public class ProductService {
         return true;
     }
     public Product update (Product product){
-        LOG.debug(product.toString());
+        log.debug(product.toString());
         var result = products.stream().filter(i->i.getId()==product.getId()).findFirst().orElse(null);
         if (result==null) return null;
         result.setName(product.getName());
